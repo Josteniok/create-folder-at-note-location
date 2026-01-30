@@ -50,7 +50,7 @@ class GetFolderName extends Modal {
 		this.setTitle("Enter folder name");
 		let folderName = "";
 
-		new Setting(this.contentEl).setName("Name").addText((text) =>
+		new Setting(this.contentEl).setName("Folder Name").addText((text) =>
 			text.onChange((value) => {
 				folderName = value;
 			}),
