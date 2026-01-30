@@ -26,6 +26,8 @@ export default class CreateFolderAtNoteLocation extends Plugin {
 							},
 						);
 					}).open();
+				} else {
+					new Notice("Folder not created. No active note found.");
 				}
 			},
 		});
