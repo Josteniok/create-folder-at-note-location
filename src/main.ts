@@ -1,7 +1,16 @@
 import { App, Modal, Setting, Notice, Plugin } from "obsidian";
+import {
+	DEFAULT_SETTINGS,
+	CreateFolderAtNoteLocationSettings,
+	FolderAtNoteLocationPluginSettingsTab,
+} from "./settings";
 
 export default class CreateFolderAtNoteLocation extends Plugin {
+	settings: CreateFolderAtNoteLocationSettings;
+
 	async onload() {
+		await this.loadSettings();
+
 		// This adds a folder where the currently open note is located
 		this.addCommand({
 			id: "add-folder-where-open-note-is",
@@ -17,7 +26,25 @@ export default class CreateFolderAtNoteLocation extends Plugin {
 							result;
 						this.app.vault.createFolder(folderPath).then(
 							(value) => {
-								// Do nothing
+								if (this.settings.createFileInFolderSetting) {
+									this.app.vault
+										.create(
+											folderPath + "/" + result + ".md",
+											"",
+										)
+										.then(
+											(value) => {
+												void this.app.workspace
+													.getLeaf(true)
+													.openFile(value);
+											},
+											(error) => {
+												new Notice(
+													"File not created. File already exists.",
+												);
+											},
+										);
+								}
 							},
 							(error) => {
 								new Notice(
@@ -31,9 +58,25 @@ export default class CreateFolderAtNoteLocation extends Plugin {
 				}
 			},
 		});
+
+		this.addSettingTab(
+			new FolderAtNoteLocationPluginSettingsTab(this.app, this),
+		);
 	}
 
 	onunload() {}
+
+	async loadSettings() {
+		this.settings = Object.assign(
+			{},
+			DEFAULT_SETTINGS,
+			(await this.loadData()) as Partial<CreateFolderAtNoteLocationSettings>,
+		);
+	}
+
+	async saveSettings() {
+		await this.saveData(this.settings);
+	}
 }
 
 class GetFolderName extends Modal {
@@ -50,7 +93,7 @@ class GetFolderName extends Modal {
 		this.setTitle("Enter folder name");
 		let folderName = "";
 
-		new Setting(this.contentEl).setName("Folder Name").addText((text) =>
+		new Setting(this.contentEl).setName("Folder name").addText((text) =>
 			text.onChange((value) => {
 				folderName = value;
 			}),
