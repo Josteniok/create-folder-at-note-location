@@ -16,46 +16,7 @@ export default class CreateFolderAtNoteLocation extends Plugin {
 			id: "add-folder-where-open-note-is",
 			name: "Add folder here",
 			callback: () => {
-				const filePath = this.app.workspace.getActiveFile()?.path;
-
-				if (filePath) {
-					new GetFolderName(this.app, (result) => {
-						const folderPath =
-							filePath.substring(0, filePath.lastIndexOf("/")) +
-							"/" +
-							result;
-						this.app.vault.createFolder(folderPath).then(
-							(value) => {
-								if (this.settings.createFileInFolderSetting) {
-									this.app.vault
-										.create(
-											folderPath + "/" + result + ".md",
-											"",
-										)
-										.then(
-											(value) => {
-												void this.app.workspace
-													.getLeaf(true)
-													.openFile(value);
-											},
-											(error) => {
-												new Notice(
-													"File not created. File already exists.",
-												);
-											},
-										);
-								}
-							},
-							(error) => {
-								new Notice(
-									"Folder not created. Folder already exists.",
-								);
-							},
-						);
-					}).open();
-				} else {
-					new Notice("Folder not created. No active note found.");
-				}
+				this.addFolder();
 			},
 		});
 
@@ -76,6 +37,46 @@ export default class CreateFolderAtNoteLocation extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+
+	addFolder() {
+		const filePath = this.app.workspace.getActiveFile()?.path;
+
+		if (filePath) {
+			new GetFolderName(this.app, (result) => {
+				const folderPath =
+					filePath.substring(0, filePath.lastIndexOf("/")) +
+					"/" +
+					result;
+				this.app.vault.createFolder(folderPath).then(
+					(value) => {
+						if (this.settings.createFileInFolderSetting) {
+							this.app.vault
+								.create(folderPath + "/" + result + ".md", "")
+								.then(
+									(value) => {
+										void this.app.workspace
+											.getLeaf(true)
+											.openFile(value);
+									},
+									(error) => {
+										new Notice(
+											"File not created. File already exists.",
+										);
+									},
+								);
+						}
+					},
+					(error) => {
+						new Notice(
+							"Folder not created. Folder already exists.",
+						);
+					},
+				);
+			}).open();
+		} else {
+			new Notice("Folder not created. No active note found.");
+		}
 	}
 }
 
