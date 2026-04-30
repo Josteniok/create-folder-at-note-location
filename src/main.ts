@@ -10,20 +10,27 @@ export default class CreateFolderAtNoteLocation extends Plugin {
 				const filePath = this.app.workspace.getActiveFile()?.path;
 
 				if (filePath) {
-					new GetFolderName(this.app, (result) => {
-						const folderPath =
-							filePath.substring(0, filePath.lastIndexOf("/")) +
-							"/" +
-							result;
-						this.app.vault.createFolder(folderPath).then(
-							() => {},
-							(error) => {
-								new Notice(
-									"Folder not created. Folder already exists.",
-								);
-							},
-						);
-					}).open();
+					new GetFolderName(
+						this.app,
+						(result) => {
+							const folderPath =
+								filePath.substring(
+									0,
+									filePath.lastIndexOf("/"),
+								) +
+								"/" +
+								result;
+							this.app.vault.createFolder(folderPath).then(
+								() => {},
+								(error) => {
+									new Notice(
+										"Folder not created. Folder already exists.",
+									);
+								},
+							);
+						},
+						"Enter folder name",
+					).open();
 				} else {
 					new Notice("Folder not created. No active note found.");
 				}
@@ -40,38 +47,45 @@ export default class CreateFolderAtNoteLocation extends Plugin {
 				const filePath = this.app.workspace.getActiveFile()?.path;
 
 				if (filePath) {
-					new GetFolderName(this.app, (result) => {
-						const folderPath =
-							filePath.substring(0, filePath.lastIndexOf("/")) +
-							"/" +
-							result;
-						this.app.vault.createFolder(folderPath).then(
-							(value) => {
-								this.app.vault
-									.create(
-										folderPath + "/" + result + ".md",
-										"",
-									)
-									.then(
-										(value) => {
-											void this.app.workspace
-												.getLeaf(true)
-												.openFile(value);
-										},
-										(error) => {
-											new Notice(
-												"File not created. File already exists.",
-											);
-										},
+					new GetFolderName(
+						this.app,
+						(result) => {
+							const folderPath =
+								filePath.substring(
+									0,
+									filePath.lastIndexOf("/"),
+								) +
+								"/" +
+								result;
+							this.app.vault.createFolder(folderPath).then(
+								(value) => {
+									this.app.vault
+										.create(
+											folderPath + "/" + result + ".md",
+											"",
+										)
+										.then(
+											(value) => {
+												void this.app.workspace
+													.getLeaf(true)
+													.openFile(value);
+											},
+											(error) => {
+												new Notice(
+													"File not created. File already exists.",
+												);
+											},
+										);
+								},
+								(error) => {
+									new Notice(
+										"Folder not created. Folder already exists.",
 									);
-							},
-							(error) => {
-								new Notice(
-									"Folder not created. Folder already exists.",
-								);
-							},
-						);
-					}).open();
+								},
+							);
+						},
+						"Enter folder name (a note will also be created in the file)",
+					).open();
 				} else {
 					new Notice("Folder not created. No active note found.");
 				}
@@ -83,7 +97,11 @@ export default class CreateFolderAtNoteLocation extends Plugin {
 }
 
 class GetFolderName extends Modal {
-	constructor(app: App, onSubmit: (folderName: string) => void) {
+	constructor(
+		app: App,
+		onSubmit: (folderName: string) => void,
+		modalTitle: string,
+	) {
 		super(app);
 
 		this.scope.register(null, "Enter", () => {
@@ -93,7 +111,7 @@ class GetFolderName extends Modal {
 			}
 		});
 
-		this.setTitle("Enter folder name");
+		this.setTitle(modalTitle);
 		let folderName = "";
 
 		new Setting(this.contentEl).setName("Folder name").addText((text) =>
