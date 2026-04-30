@@ -30,6 +30,7 @@ export default class CreateFolderAtNoteLocation extends Plugin {
 							);
 						},
 						"Enter folder name",
+						"Folder name",
 					).open();
 				} else {
 					new Notice("Folder not created. No active note found.");
@@ -84,7 +85,8 @@ export default class CreateFolderAtNoteLocation extends Plugin {
 								},
 							);
 						},
-						"Enter folder name (a note will also be created in the folder)",
+						"Enter folder and note name",
+						"Folder and note name",
 					).open();
 				} else {
 					new Notice("Folder not created. No active note found.");
@@ -101,6 +103,7 @@ class GetFolderName extends Modal {
 		app: App,
 		onSubmit: (folderName: string) => void,
 		modalTitle: string,
+		promptText: string,
 	) {
 		super(app);
 
@@ -114,7 +117,7 @@ class GetFolderName extends Modal {
 		this.setTitle(modalTitle);
 		let folderName = "";
 
-		new Setting(this.contentEl).setName("Folder name").addText((text) =>
+		new Setting(this.contentEl).setName(promptText).addText((text) =>
 			text.onChange((value) => {
 				folderName = value;
 			}),
