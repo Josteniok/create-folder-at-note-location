@@ -84,7 +84,7 @@ export default class CreateFolderAtNoteLocation extends Plugin {
 								},
 							);
 						},
-						"Enter folder name (a note will also be created in the file)",
+						"Enter folder name (a note will also be created in the folder)",
 					).open();
 				} else {
 					new Notice("Folder not created. No active note found.");
