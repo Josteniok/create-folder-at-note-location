@@ -1,5 +1,3 @@
-This is a very simple Obsidian plugin that adds a command to create a folder at the location of the current active note.
-
-There is a preference that can be set to also create a file in the newly created folder that is the same name as the folder. I do this because I use the Waypoint plugin and this automatically creates a folder note for the folder.
+This is a very simple Obsidian plugin that adds two commands to create a folder at the location of the current active note. The first command (Add Folder Here) will just add a folder at the location of the current active note. The other command (Add Folder with Note Here) adds a folder and a note with the same name to it and then opens the note. I added the second command because I use the Waypoint plugin and this automatically creates a folder note for the folder.
 
 This plugin was created using the sample plugin for Obsidian (https://obsidian.md).
