@@ -7,7 +7,7 @@ export interface CreateFolderAtNoteLocationSettings {
 }
 
 export const DEFAULT_SETTINGS: CreateFolderAtNoteLocationSettings = {
-	folderFileTemplatePath: "default",
+	folderFileTemplatePath: "",
 };
 
 export class CreateFolderAtNoteLocationSettingsTab extends PluginSettingTab {
