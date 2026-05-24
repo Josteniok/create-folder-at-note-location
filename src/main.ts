@@ -1,7 +1,16 @@
-import { App, Modal, Setting, Notice, Plugin } from "obsidian";
+import { App, Modal, Notice, Plugin, Setting, TFile } from "obsidian";
+import {
+	CreateFolderAtNoteLocationSettings,
+	CreateFolderAtNoteLocationSettingsTab,
+	DEFAULT_SETTINGS,
+} from "./settings";
 
 export default class CreateFolderAtNoteLocation extends Plugin {
+	settings: CreateFolderAtNoteLocationSettings;
+
 	async onload() {
+		await this.loadSettings();
+
 		// This adds a folder where the currently open note is located
 		this.addCommand({
 			id: "add-folder-where-open-note-is",
@@ -47,6 +56,10 @@ export default class CreateFolderAtNoteLocation extends Plugin {
 			callback: () => {
 				const filePath = this.app.workspace.getActiveFile()?.path;
 
+				const templateFile = this.app.vault.getAbstractFileByPath(
+					this.settings.folderFileTemplatePath,
+				);
+
 				if (filePath) {
 					new GetFolderName(
 						this.app,
@@ -60,23 +73,52 @@ export default class CreateFolderAtNoteLocation extends Plugin {
 								result;
 							this.app.vault.createFolder(folderPath).then(
 								(value) => {
-									this.app.vault
-										.create(
-											folderPath + "/" + result + ".md",
-											"",
-										)
-										.then(
-											(value) => {
-												void this.app.workspace
-													.getLeaf(true)
-													.openFile(value);
-											},
-											(error) => {
-												new Notice(
-													"File not created. File already exists.",
-												);
-											},
-										);
+									if (
+										templateFile &&
+										templateFile instanceof TFile
+									) {
+										this.app.vault
+											.copy(
+												templateFile,
+												folderPath +
+													"/" +
+													result +
+													".md",
+											)
+											.then(
+												(value) => {
+													void this.app.workspace
+														.getLeaf(true)
+														.openFile(value);
+												},
+												(error) => {
+													new Notice(
+														"File not copied. File already exists.",
+													);
+												},
+											);
+									} else {
+										this.app.vault
+											.create(
+												folderPath +
+													"/" +
+													result +
+													".md",
+												"",
+											)
+											.then(
+												(value) => {
+													void this.app.workspace
+														.getLeaf(true)
+														.openFile(value);
+												},
+												(error) => {
+													new Notice(
+														"File not created. File already exists.",
+													);
+												},
+											);
+									}
 								},
 								(error) => {
 									new Notice(
@@ -93,9 +135,26 @@ export default class CreateFolderAtNoteLocation extends Plugin {
 				}
 			},
 		});
+
+		// This adds a settings tab so the user can configure various aspects of the plugin
+		this.addSettingTab(
+			new CreateFolderAtNoteLocationSettingsTab(this.app, this),
+		);
 	}
 
 	onunload() {}
+
+	async loadSettings() {
+		this.settings = Object.assign(
+			{},
+			DEFAULT_SETTINGS,
+			(await this.loadData()) as Partial<CreateFolderAtNoteLocationSettings>,
+		);
+	}
+
+	async saveSettings() {
+		await this.saveData(this.settings);
+	}
 }
 
 class GetFolderName extends Modal {
