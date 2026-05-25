@@ -1,7 +1,7 @@
 {
 	"id": "create-folder-at-note-location",
 	"name": "Create Folder at Note Location",
-	"version": "1.3.1",
+	"version": "1.3.2",
 	"minAppVersion": "1.11.5",
 	"description": "Creates a folder at the location of the current note.",
 	"author": "Justin Ennis",
