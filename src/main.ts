@@ -78,25 +78,35 @@ export default class CreateFolderAtNoteLocation extends Plugin {
 										templateFile instanceof TFile
 									) {
 										this.app.vault
-											.copy(
-												templateFile,
-												folderPath +
-													"/" +
-													result +
-													".md",
-											)
+											.read(templateFile)
 											.then(
-												(value) => {
-													void this.app.workspace
-														.getLeaf(true)
-														.openFile(value);
+												(readFile) => {
+													this.app.vault
+														.create(
+															folderPath +
+																"/" +
+																result +
+																".md",
+															readFile,
+														)
+														.then(
+															(value) => {
+																void this.app.workspace
+																	.getLeaf(true)
+																	.openFile(value);
+															},
+															(error) => {
+																new Notice(
+																	"File not copied. File already exists.",
+																);
+															},
+														);
 												},
 												(error) => {
 													new Notice(
-														"File not copied. File already exists.",
+														"File not read. File does not exist.",
 													);
-												},
-											);
+											});
 									} else {
 										this.app.vault
 											.create(
