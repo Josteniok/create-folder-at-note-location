@@ -22,21 +22,7 @@ export default class CreateFolderAtNoteLocation extends Plugin {
 					new GetFolderName(
 						this.app,
 						(result) => {
-							const folderPath =
-								filePath.substring(
-									0,
-									filePath.lastIndexOf("/"),
-								) +
-								"/" +
-								result;
-							this.app.vault.createFolder(folderPath).then(
-								() => {},
-								(error) => {
-									new Notice(
-										"Folder not created. Folder already exists.",
-									);
-								},
-							);
+							void this.createFolder(result, filePath);
 						},
 						"Enter folder name",
 						"Folder name",
@@ -56,86 +42,12 @@ export default class CreateFolderAtNoteLocation extends Plugin {
 			callback: () => {
 				const filePath = this.app.workspace.getActiveFile()?.path;
 
-				const templateFile = this.app.vault.getAbstractFileByPath(
-					this.settings.folderFileTemplatePath,
-				);
-
 				if (filePath) {
+
 					new GetFolderName(
 						this.app,
 						(result) => {
-							const folderPath =
-								filePath.substring(
-									0,
-									filePath.lastIndexOf("/"),
-								) +
-								"/" +
-								result;
-							this.app.vault.createFolder(folderPath).then(
-								(value) => {
-									if (
-										templateFile &&
-										templateFile instanceof TFile
-									) {
-										this.app.vault
-											.read(templateFile)
-											.then(
-												(readFile) => {
-													this.app.vault
-														.create(
-															folderPath +
-																"/" +
-																result +
-																".md",
-															readFile,
-														)
-														.then(
-															(value) => {
-																void this.app.workspace
-																	.getLeaf(true)
-																	.openFile(value);
-															},
-															(error) => {
-																new Notice(
-																	"File not copied. File already exists.",
-																);
-															},
-														);
-												},
-												(error) => {
-													new Notice(
-														"File not read. File does not exist.",
-													);
-											});
-									} else {
-										this.app.vault
-											.create(
-												folderPath +
-													"/" +
-													result +
-													".md",
-												"",
-											)
-											.then(
-												(value) => {
-													void this.app.workspace
-														.getLeaf(true)
-														.openFile(value);
-												},
-												(error) => {
-													new Notice(
-														"File not created. File already exists.",
-													);
-												},
-											);
-									}
-								},
-								(error) => {
-									new Notice(
-										"Folder not created. Folder already exists.",
-									);
-								},
-							);
+							void this.createFolderWithNote(result, filePath);
 						},
 						"Enter folder and note name",
 						"Folder and note name",
@@ -164,6 +76,91 @@ export default class CreateFolderAtNoteLocation extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+
+	async createFolder(folderName: string, filePath: string) {
+		const folderPath =
+			filePath.substring(
+				0,
+				filePath.lastIndexOf("/"),
+			) +
+			"/" +
+			folderName;
+
+		try {
+			await this.app.vault.createFolder(folderPath);
+		} catch (error) {
+			console.error('Error creating folder: ', error);
+			new Notice(
+				"Folder not created. Folder already exists.",
+			);
+			return;
+		}
+	}
+
+	async createFolderWithNote(folderName: string, filePath: string) {
+		const templateFile = this.app.vault.getAbstractFileByPath(
+			this.settings.folderFileTemplatePath,
+		);
+
+		const folderPath =
+			filePath.substring(
+				0,
+				filePath.lastIndexOf("/"),
+			) +
+			"/" +
+			folderName;
+
+		try {
+			await this.app.vault.createFolder(folderPath);
+		} catch (error) {
+			console.error('Error creating folder: ', error);
+			new Notice(
+				"Folder not created. Folder already exists.",
+			);
+			return;
+		}
+
+		if (
+			templateFile &&
+			templateFile instanceof TFile
+		) {
+			let templateFileText: string = '';
+
+			try {
+				templateFileText = await this.app.vault.read(templateFile);
+			} catch (error) {
+				console.error('Error reading file: ', error);
+				new Notice(
+					"Could not read file. File does not exist.",
+				);
+				return;
+			}
+
+			try {
+				const createdFile = await this.app.vault.create(folderPath +
+					"/" +
+					folderName +
+					".md",
+					templateFileText,);
+
+				void this.app.workspace.getLeaf(true).openFile(createdFile);
+			} catch (error) {
+				console.error('Error creating file: ', error);
+				new Notice(
+					"File not created. File already exists."
+				);
+				return;
+			}
+		} else {
+			const createdFile = await this.app.vault.create(folderPath +
+				"/" +
+				folderName +
+				".md",
+				"",);
+			void this.app.workspace.getLeaf(true).openFile(createdFile);
+		}
+
 	}
 }
 
