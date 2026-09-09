@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
-	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"name": "create-folder-at-note-location",
+	"version": "1.4.0",
+	"description": "Creates a folder at the location of the current note.",
 	"main": "main.js",
 	"type": "module",
 	"scripts": {
