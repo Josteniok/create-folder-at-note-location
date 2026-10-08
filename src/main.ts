@@ -16,7 +16,7 @@ export default class CreateFolderAtNoteLocation extends Plugin {
 			id: "add-folder-where-open-note-is",
 			name: "Add folder here",
 			callback: () => {
-				const filePath = this.app.workspace.getActiveFile()?.path;
+				const filePath = this.getFilePath();
 
 				if (filePath) {
 					new GetFolderName(
@@ -28,7 +28,7 @@ export default class CreateFolderAtNoteLocation extends Plugin {
 						"Folder name",
 					).open();
 				} else {
-					new Notice("Folder not created. No active note found.");
+					new Notice("Folder not created. No note is active.");
 				}
 			},
 		});
@@ -40,10 +40,9 @@ export default class CreateFolderAtNoteLocation extends Plugin {
 			id: "add-folder-with-note-where-open-note-is",
 			name: "Add folder with note here",
 			callback: () => {
-				const filePath = this.app.workspace.getActiveFile()?.path;
+				const filePath = this.getFilePath();
 
 				if (filePath) {
-
 					new GetFolderName(
 						this.app,
 						(result) => {
@@ -53,7 +52,7 @@ export default class CreateFolderAtNoteLocation extends Plugin {
 						"Folder and note name",
 					).open();
 				} else {
-					new Notice("Folder not created. No active note found.");
+					new Notice("Folder not created. No note is active.");
 				}
 			},
 		});
@@ -76,6 +75,18 @@ export default class CreateFolderAtNoteLocation extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+
+	getFilePath(): string | undefined {
+		const activeFile = this.app.workspace.getActiveFile();
+
+		if (activeFile) {
+			return activeFile.path;
+		} else {
+			return this.settings.createFolderAnyway ?
+				'/' :
+				undefined
+		}
 	}
 
 	async createFolder(folderName: string, filePath: string) {
